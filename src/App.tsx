@@ -1,9 +1,12 @@
+import {RouterProvider} from "react-router-dom";
+import {AppProvider} from "./context";
+import {router} from "./router";
 
 function App() {
   return (
-    <h1 className="text-3xl font-bold underline flex justify-center">
-      Hello world!
-    </h1>
+    <AppProvider>
+      <RouterProvider router={router()} />
+    </AppProvider>
   )
 }
 
