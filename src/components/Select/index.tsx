@@ -1,5 +1,5 @@
 import {FC, JSX, useRef, useState} from "react";
-import {useClickOutside} from "../../hooks/useClickOutside.tsx";
+import {useClickOutside} from "../../hooks/useClickOutside";
 import classNames from "classnames";
 
 type SelectProps = {
@@ -15,6 +15,13 @@ const Select: FC = ({ className, label }: SelectProps): JSX.Element => {
   useClickOutside(ref, () => setVisible(false));
   
   const addOption = (option: string) => setOptions([...options, option]);
+  const getSelectText = () => {
+    if (options.length > 0) {
+      if (options.length >= 3) return options.length + ' selected'
+      return options.slice(0, 3).join(', ');
+    }
+    return 'All';
+  }
   
   return (
     <div className={classNames('flex flex-row gap-3 mb-4 items-center relative', className)}>
@@ -24,7 +31,7 @@ const Select: FC = ({ className, label }: SelectProps): JSX.Element => {
         className="relative bg-surface pe-4 ps-2 text-start border-2 border-slate-300 rounded cursor-pointer min-w-[150px]"
         onClick={() => setVisible(true)}
       >
-        <span className="text-start">All</span>
+        <span className="text-start">{getSelectText()}</span>
         <div className={classNames('absolute bg-surface w-full left-0 top-7 shadow-md max-h-[150px] overflow-auto', {
           'hidden': !visible
         })}>
