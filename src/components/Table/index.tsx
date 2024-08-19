@@ -12,78 +12,79 @@ const Table: FC = (): JSX.Element => {
         <th className="py-4 px-3 text-start">Ratio</th>
       </tr>
       </thead>
-      {/*<tbody>*/}
-      {/*<tr>*/}
-      {/*  <td colSpan="5" className="text-center">*/}
-      {/*    <span className="text-2xl text-slate-500">Start search to preview results</span>*/}
-      {/*  </td>*/}
-      {/*</tr>*/}
-      {/*</tbody>*/}
       <tbody>
-      <tr className="hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
-      </tr>
-      <tr className="hover:bg-sky-200 cursor-pointer">
-        <td className="p-3">10011</td>
-        <td className="p-3">3.00M DAI</td>
-        <td className="p-3">ETH-A</td>
-        <td className="p-3">225,000 ETH</td>
-        <td className="p-3">300%</td>
+      <tr>
+        <td colSpan="5" className="text-center">
+          <span className="text-2xl text-slate-500">Start search to preview results</span>
+        </td>
       </tr>
       </tbody>
+      
+      {/*<tbody>*/}
+      {/*<tr className="hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="bg-slate-200 hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*<tr className="hover:bg-sky-200 cursor-pointer">*/}
+      {/*  <td className="p-3">10011</td>*/}
+      {/*  <td className="p-3">3.00M DAI</td>*/}
+      {/*  <td className="p-3">ETH-A</td>*/}
+      {/*  <td className="p-3">225,000 ETH</td>*/}
+      {/*  <td className="p-3">300%</td>*/}
+      {/*</tr>*/}
+      {/*</tbody>*/}
     </table>
   )
 }

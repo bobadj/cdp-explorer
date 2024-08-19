@@ -4,7 +4,7 @@ import {useAppContext} from "../../hooks";
 
 const Explorer: FC = (): JSX.Element => {
   const { collateralTypes, totalVaults } = useAppContext();
-  
+
   return (
     <>
       <div className="bg-slate-200 pb-32 pt-20">
