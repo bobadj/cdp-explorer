@@ -11,15 +11,19 @@ import {
 } from "../../const";
 
 interface AppContextValue {
+  isLoading: boolean
   totalVaults: number
   collateralTypes: CollateralType[]
   toggleCollateralType: Function
+  searchForCdps: Function
+  vaults: CdpInfo[]
 }
 
-export type VaultInfo = {
+export type CdpInfo = {
   cdpId: number
   collateral: string
   debt: string
+  totalDebt: string|number
   ilk: string
   owner: Address
   urn: Address
@@ -44,9 +48,11 @@ export const AppContext: Context<AppContextValue> = createContext({} as AppConte
 type AppProviderProps = PropsWithChildren & {}
 
 export default function AppProvider({ children }: AppProviderProps): JSX.Element {
+  const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const [ availableCollateralTypes, setAvailableCollateralTypes ] = useState<CollateralType[]>([]);
   const [ activeCollateralTypes, setActiveCollateralTypes ] = useState<CollateralType[]>([]);
   const [ totalVaults, setTotalVaults ] = useState<number>(0);
+  const [ vaults, setVaults ] = useState<CdpInfo[]>([]);
   
   const web3 = new Web3(Web3.givenProvider || `wss://mainnet.infura.io/ws/v3/${import.meta.env.VITE_INFURA_API_KEY}`);
   const IlkRegistryContract = new web3.eth.Contract(IlkRegistryABI, ILK_REGISTRY_CONTRACT_ADDRESS);
@@ -57,9 +63,20 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   const SEARCH_SIZE = 20;
   
   useEffect(() => {
-    fetchCollateralTypes()
-    fetchTotalVaults()
+    fetchBasicInfos()
   }, []);
+  
+  const fetchBasicInfos = async () => {
+    setVaults([]);
+    setIsLoading(true);
+    
+    await fetchCollateralTypes();
+    await fetchTotalVaults();
+    
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500)
+  }
   
   const fetchCollateralTypes = async () => setAvailableCollateralTypes(
     (await IlkRegistryContract.methods.list().call() || [])
@@ -67,7 +84,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     );
   
   const fetchTotalVaults = async () => setTotalVaults(
-    await DssCdpManagerContract.methods.cdpi().call() as number
+    web3.utils.toNumber(await DssCdpManagerContract.methods.cdpi().call()) as number
   );
   
   // "cache" cdpId => ilk map, to avoid unnecessary calls
@@ -82,17 +99,17 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return ilk;
   }
   
-  // "cache" ilkInfo, there is no need ( or there is? ) to fetch it if already exist
+  // "cache" ilkInfo, there is no need ( or there is? ) to fetch it already exist
   const getIlkInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<IlkInfo> => {
     let ilkInfo: IlkInfo|null = JSON.parse(localStorage.getItem(`${ilk}_info`));
     if (!ilkInfo || !useCachedValueIfExist) {
       const { Art, dust, line, rate, spot } = await VatContract.methods.ilks(ilk).call();
       ilkInfo = {
-        Art: web3.utils.fromWei(Art, 'ether'),
-        dust: web3.utils.fromWei(dust, 'ether'),
-        line: web3.utils.fromWei(line, 'ether'),
-        rate: web3.utils.fromWei(rate, 'ether'),
-        spot: web3.utils.fromWei(spot, 'ether')
+        Art: Art.toString(),
+        dust: dust.toString(),
+        line: line.toString(),
+        rate: rate.toString(),
+        spot: spot.toString()
       };
       localStorage.setItem(`${ilk}_info`, JSON.stringify(ilkInfo));
     }
@@ -100,27 +117,38 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return ilkInfo
   }
   
-  // keep vaultInfo "cached" too
-  const getCdpInfoByCdpId = async (cdpId: number, useCachedValueIfExist: boolean = true): Promise<VaultInfo> => {
-    let vaultInfo: VaultInfo|null = JSON.parse(localStorage.getItem(`${cdpId}_vault_info`));
-    if (!vaultInfo || !useCachedValueIfExist) {
+  // keep CdpInfo "cached" too
+  const getCdpInfoByCdpId = async (cdpId: number, useCachedValueIfExist: boolean = true): Promise<CdpInfo> => {
+    let cdpInfo: CdpInfo|null = JSON.parse(localStorage.getItem(`${cdpId}_vault_info`));
+    if (!cdpInfo || !useCachedValueIfExist) {
       const { collateral, debt, ilk, owner, urn, userAddr } = await VaultInfoContract.methods.getCdpInfo(cdpId).call();
-      vaultInfo = {
+      cdpInfo = {
         cdpId: cdpId,
         collateral: web3.utils.fromWei(collateral, 'ether'),
-        debt: web3.utils.fromWei(debt, 'ether'),
+        debt: debt.toString(),
         ilk: web3.utils.toUtf8(ilk),
         owner: owner,
         urn: urn,
-        userAddr: userAddr
+        userAddr: userAddr,
+        totalDebt: 0
       };
-      localStorage.setItem(`${cdpId}_vault_info`, JSON.stringify(vaultInfo));
+      localStorage.setItem(`${cdpId}_vault_info`, JSON.stringify(cdpInfo));
     }
     
-    return vaultInfo;
+    return cdpInfo;
+  }
+  
+  const calculateCdpTotalDebt = (cdp: CdpInfo, ilkInfo: IlkInfo) => {
+    const totalDebt = (BigInt(cdp.debt) * BigInt(ilkInfo.rate)) / BigInt(10 ** 27);
+
+    return web3.utils.fromWei(totalDebt, 'ether');
   }
   
   const searchForCdp = async (roughCdpId: number, size = SEARCH_SIZE) => {
+    if (!roughCdpId) {
+      setVaults([]);
+      return;
+    }
     // sort ids first, closest to a roughCdpId
     const vaultIds = [...Array(totalVaults).keys()]
       .sort((a, b) => Math.abs(a - roughCdpId) - Math.abs(b - roughCdpId))
@@ -128,22 +156,25 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const vaults = [];
     // todo: em I sure about this? what if there is no CDPs near roughCdpId?
     for (let i = 0; i <= totalVaults; i++) {
+      const cdpId = vaultIds[i];
+      if (!cdpId) continue;
       // exit from loop once when target size is reached
       // if (vaults.length >= size) break;
-      if (vaults.length >= 1) break; // todo: remove this once when function is ready
-      const cdpId = vaultIds[i];
-      
+      if (vaults.length >= 1 || !cdpId) break; // todo: remove this once when function is ready
+
       // @note: no BathRequest available :( https://github.com/web3/web3.js/issues/6224
-      const cachedIlksMap: object = JSON.parse(localStorage.getItem('ilks_map')) || {};
-      const ilk = await getIlkByCdpId(cachedIlksMap[cdpId]);
+      const ilk = await getIlkByCdpId(cdpId);
       const ilkInfo: IlkInfo = await getIlkInfo(ilk);
-      
+
       if (activeCollateralTypes.length <= 0 || activeCollateralTypes.map( val => val.ilk ).indexOf(ilk) >= 0) {
-        const vaultInfo: VaultInfo = await getCdpInfoByCdpId(cdpId);
+        const cdpInfo: CdpInfo = await getCdpInfoByCdpId(cdpId);
+        cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, ilkInfo);
         
-        vaults.push(vaultInfo);
+        vaults.push(cdpInfo);
       }
     }
+    
+    setVaults(vaults);
   }
   
   const toggleCollateralType = (type: CollateralType) => {
@@ -156,9 +187,12 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   }
   
   const contextValue: AppContextValue = {
+    vaults,
+    isLoading,
     totalVaults,
     toggleCollateralType,
-    collateralTypes: availableCollateralTypes
+    collateralTypes: availableCollateralTypes,
+    searchForCdps: searchForCdp
   };
   
   return (
