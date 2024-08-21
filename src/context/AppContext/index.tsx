@@ -5,6 +5,7 @@ import DssCdpManagerABI from '../../../abis/DssCdpManager.abi.json';
 import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
 import VatABI from '../../../abis/Vat.abi.json';
 import {
+  RAY,
   DSS_CDP_MANAGER_CONTRACT_ADDRESS, ETH_PRICE_IN_USD,
   ILK_REGISTRY_CONTRACT_ADDRESS, VAT_CONTRACT_ADDRESS,
   VAULT_INFO_CONTRACT_ADDRESS
@@ -19,6 +20,30 @@ interface AppContextValue {
   vaults: CdpInfo[]
 }
 
+export type CollateralType = {
+  ilk: string
+  name: string
+}
+
+export type VatInfo = {
+  Art: string
+  dust: string
+  line: string
+  rate: string
+  spot: string
+}
+
+export type IlkInfo = {
+  name: string
+  symbol: string
+  class: number
+  dec: number
+  gem: Address
+  pip: Address
+  join: Address
+  xlip: Address
+}
+
 export type CdpInfo = {
   cdpId: number
   collateral: string
@@ -28,20 +53,8 @@ export type CdpInfo = {
   ilk: string
   owner: Address
   urn: Address
-  userAddr: Address
-}
-
-export type CollateralType = {
-  ilk: string
-  name: string
-}
-
-export type IlkInfo = {
-  Art: string
-  dust: string
-  line: string
-  rate: string
-  spot: string
+  userAddr: Address,
+  ilkInfo?: IlkInfo
 }
 
 export const AppContext: Context<AppContextValue> = createContext({} as AppContextValue);
@@ -100,23 +113,44 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return ilk;
   }
   
-  // "cache" ilkInfo, there is no need ( or there is? ) to fetch it already exist
-  const getIlkInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<IlkInfo> => {
-    let ilkInfo: IlkInfo|null = JSON.parse(localStorage.getItem(`${ilk}_info`));
-    if (!ilkInfo || !useCachedValueIfExist) {
+  // "cache" vatInfo, there is no need ( or there is? ) to fetch it already exist
+  const getVatInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<VatInfo> => {
+    let vatInfo: VatInfo|null = JSON.parse(localStorage.getItem(`${ilk}_vat_info`));
+    if (!vatInfo || !useCachedValueIfExist) {
       const { Art, dust, line, rate, spot } = await VatContract.methods.ilks(ilk).call();
-      ilkInfo = {
+      vatInfo = {
         Art: Art.toString(),
         dust: dust.toString(),
         line: line.toString(),
         rate: rate.toString(),
         spot: spot.toString()
       };
+      localStorage.setItem(`${ilk}_vat_info`, JSON.stringify(vatInfo));
+    }
+    
+    return vatInfo
+  }
+  
+  const getIlkInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<IlkInfo> => {
+    let ilkInfo: IlkInfo|null = JSON.parse(localStorage.getItem(`${ilk}_info`));
+    if (!ilkInfo || !useCachedValueIfExist) {
+      const { name, symbol, dec, pip, join, xlip, gem, ...otherIlkInfo } = await IlkRegistryContract.methods.info(ilk).call() as IlkInfo;
+      ilkInfo = {
+        name,
+        symbol,
+        dec: +dec.toString(),
+        class: +otherIlkInfo.class.toString(),
+        pip,
+        join,
+        xlip,
+        gem
+      };
       localStorage.setItem(`${ilk}_info`, JSON.stringify(ilkInfo));
     }
     
     return ilkInfo
   }
+  
   
   // keep CdpInfo "cached" too
   const getCdpInfoByCdpId = async (cdpId: number, useCachedValueIfExist: boolean = true): Promise<CdpInfo> => {
@@ -130,8 +164,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
         ilk: web3.utils.toUtf8(ilk),
         owner: owner,
         urn: urn,
-        userAddr: userAddr,
-        totalDebt: 0
+        userAddr: userAddr
       };
       localStorage.setItem(`${cdpId}_vault_info`, JSON.stringify(cdpInfo));
     }
@@ -139,8 +172,8 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return cdpInfo;
   }
   
-  const calculateCdpTotalDebt = (cdp: CdpInfo, ilkInfo: IlkInfo): string => {
-    const totalDebt = (BigInt(cdp.debt) * BigInt(ilkInfo.rate)) / BigInt(10 ** 27);
+  const calculateCdpTotalDebt = (cdp: CdpInfo, vatInfo: VatInfo): string => {
+    const totalDebt = (BigInt(cdp.debt) * BigInt(vatInfo.rate)) / BigInt(RAY);
 
     return web3.utils.fromWei(totalDebt, 'ether');
   }
@@ -173,12 +206,14 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
 
       // @note: no BathRequest available :( https://github.com/web3/web3.js/issues/6224
       const ilk = await getIlkByCdpId(cdpId);
-      const ilkInfo: IlkInfo = await getIlkInfo(ilk);
-
       if (activeCollateralTypes.length <= 0 || activeCollateralTypes.map( val => val.ilk ).indexOf(ilk) >= 0) {
+        const vatInfo: VatInfo = await getVatInfo(ilk);
+        const ilkInfo: IlkInfo = await getIlkInfo(ilk);
+        
         const cdpInfo: CdpInfo = await getCdpInfoByCdpId(cdpId);
-        cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, ilkInfo);
+        cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, vatInfo);
         cdpInfo.collateralizationRatio = calculateCdpCollateralizationRatio(cdpInfo);
+        cdpInfo.ilkInfo = ilkInfo;
         
         vaults.push(cdpInfo);
       }
