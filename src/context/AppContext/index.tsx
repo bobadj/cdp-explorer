@@ -5,7 +5,7 @@ import DssCdpManagerABI from '../../../abis/DssCdpManager.abi.json';
 import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
 import VatABI from '../../../abis/Vat.abi.json';
 import {
-  DSS_CDP_MANAGER_CONTRACT_ADDRESS,
+  DSS_CDP_MANAGER_CONTRACT_ADDRESS, ETH_PRICE_IN_USD,
   ILK_REGISTRY_CONTRACT_ADDRESS, VAT_CONTRACT_ADDRESS,
   VAULT_INFO_CONTRACT_ADDRESS
 } from "../../const";
@@ -23,7 +23,8 @@ export type CdpInfo = {
   cdpId: number
   collateral: string
   debt: string
-  totalDebt: string|number
+  totalDebt?: string|number
+  collateralizationRatio?: string|number
   ilk: string
   owner: Address
   urn: Address
@@ -138,10 +139,18 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return cdpInfo;
   }
   
-  const calculateCdpTotalDebt = (cdp: CdpInfo, ilkInfo: IlkInfo) => {
+  const calculateCdpTotalDebt = (cdp: CdpInfo, ilkInfo: IlkInfo): string => {
     const totalDebt = (BigInt(cdp.debt) * BigInt(ilkInfo.rate)) / BigInt(10 ** 27);
 
     return web3.utils.fromWei(totalDebt, 'ether');
+  }
+  
+  const calculateCdpCollateralizationRatio = (cdp: CdpInfo): string => {
+    const collateralValue = cdp.collateral * ETH_PRICE_IN_USD;
+    
+    const collateralizationRatio = collateralValue / cdp.totalDebt;
+    if (isNaN(collateralizationRatio)) return '0';
+    return (collateralizationRatio * 100).toFixed(2);
   }
   
   const searchForCdp = async (roughCdpId: number, size = SEARCH_SIZE) => {
@@ -169,6 +178,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
       if (activeCollateralTypes.length <= 0 || activeCollateralTypes.map( val => val.ilk ).indexOf(ilk) >= 0) {
         const cdpInfo: CdpInfo = await getCdpInfoByCdpId(cdpId);
         cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, ilkInfo);
+        cdpInfo.collateralizationRatio = calculateCdpCollateralizationRatio(cdpInfo);
         
         vaults.push(cdpInfo);
       }

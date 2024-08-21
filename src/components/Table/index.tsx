@@ -36,7 +36,7 @@ const Table: FC = ({ data, emptyTitle }: TableProps): JSX.Element => {
                 <td className="p-3">{d.ilk}</td>
                 <td className="p-3">{numberFormatter(+d.totalDebt)} DAI</td>
                 <td className="p-3">{numberFormatter(+d.collateral)} ETH</td>
-                <td className="p-3">300%</td>
+                <td className="p-3">{d.collateralizationRatio}%</td>
               </tr>
             ))
       }
