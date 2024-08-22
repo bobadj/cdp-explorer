@@ -9,7 +9,7 @@ export const debounce = (callback: CallableFunction, wait: number = 500) => {
   };
 };
 
-export const numberFormatter = (number: number, locale: string = 'en-US') => {
+export const numberFormatter = (number: number|BigInt, locale: string = 'en-US') => {
   return number.toLocaleString(locale, {
     maximumFractionDigits: number > 1000000 ? 1 : 0,
     notation: number > 1000000 ? 'compact' : "standard"

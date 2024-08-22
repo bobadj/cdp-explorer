@@ -1,13 +1,16 @@
-import {FC, JSX} from "react";
+import {FC, JSX, ReactNode} from "react";
 import {numberFormatter} from "../../utils";
 import classNames from "classnames";
+import Progress from "../Progress";
 
 type TableProps = {
   data: any[]
   emptyTitle: string
+  showLoadingAnimation: boolean
+  loadingAnimation?: ReactNode
 }
 
-const Table: FC = ({ data, emptyTitle }: TableProps): JSX.Element => {
+const Table: FC = ({ data, emptyTitle, showLoadingAnimation = false, loadingAnimation }: TableProps): JSX.Element => {
   return (
     <table className="border-collapse bg-surface table-auto w-full text-sm shadow-lg rounded-md min-h-[250px]">
       <thead className="border-b-2 border-b-slate-200">
@@ -21,24 +24,32 @@ const Table: FC = ({ data, emptyTitle }: TableProps): JSX.Element => {
       </thead>
       <tbody>
       {
-        (data || []).length <= 0
+        showLoadingAnimation
           ?
           <tr>
             <td colSpan="5" className="text-center">
-              <span className="text-2xl text-slate-500">{emptyTitle}</span>
+              {loadingAnimation}
             </td>
           </tr>
           :
-          (data || [])
-            .map( (d, i) => (
-              <tr key={`table__data__${i}`} className={classNames('hover:bg-sky-200 cursor-pointer', { 'bg-slate-200': i % 2 === 0 })}>
-                <td className="p-3">{d.cdpId}</td>
-                <td className="p-3">{d.ilk}</td>
-                <td className="p-3">{numberFormatter(+d.totalDebt)} DAI</td>
-                <td className="p-3">{numberFormatter(+d.collateral)} {d?.ilkInfo?.symbol}</td>
-                <td className="p-3">{d.collateralizationRatio}%</td>
-              </tr>
-            ))
+          (data || []).length <= 0
+            ?
+            <tr>
+              <td colSpan="5" className="text-center">
+                <span className="text-2xl text-slate-500">{emptyTitle}</span>
+              </td>
+            </tr>
+            :
+            (data || [])
+              .map( (d, i) => (
+                <tr key={`table__data__${i}`} className={classNames('hover:bg-sky-200 cursor-pointer', { 'bg-slate-200': i % 2 === 0 })}>
+                  <td className="p-3">{d.cdpId}</td>
+                  <td className="p-3">{d.ilk}</td>
+                  <td className="p-3">{numberFormatter(+d.totalDebt)} DAI</td>
+                  <td className="p-3">{numberFormatter(+d.collateral)} {d?.ilkInfo?.symbol}</td>
+                  <td className="p-3">{d.collateralizationRatio}%</td>
+                </tr>
+              ))
       }
       </tbody>
     </table>

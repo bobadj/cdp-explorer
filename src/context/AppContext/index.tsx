@@ -1,27 +1,29 @@
 import {Context, createContext, JSX, PropsWithChildren, useEffect, useState} from "react";
-import {Web3, Address} from "web3";
+import {Web3, Address, Bytes} from "web3";
 import IlkRegistryABI from '../../../abis/IlkRegistry.abi.json';
 import DssCdpManagerABI from '../../../abis/DssCdpManager.abi.json';
 import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
 import VatABI from '../../../abis/Vat.abi.json';
 import {
-  RAY,
-  DSS_CDP_MANAGER_CONTRACT_ADDRESS, ETH_PRICE_IN_USD,
+  RAY, RAD,
+  DSS_CDP_MANAGER_CONTRACT_ADDRESS,
   ILK_REGISTRY_CONTRACT_ADDRESS, VAT_CONTRACT_ADDRESS,
-  VAULT_INFO_CONTRACT_ADDRESS
+  VAULT_INFO_CONTRACT_ADDRESS, PRICE_FEED
 } from "../../const";
+import {numberFormatter} from "../../utils";
 
 interface AppContextValue {
   isLoading: boolean
   totalVaults: number
   collateralTypes: CollateralType[]
-  toggleCollateralType: Function
   searchForCdps: Function
   vaults: CdpInfo[]
+  searchProgress: number|null
+  totalDebt: number|BigInt
 }
 
 export type CollateralType = {
-  ilk: string
+  ilk: Bytes
   name: string
 }
 
@@ -63,8 +65,9 @@ type AppProviderProps = PropsWithChildren & {}
 
 export default function AppProvider({ children }: AppProviderProps): JSX.Element {
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ searchProgress, setSearchProgress ] = useState<number|null>(null);
+  const [ totalDebt, setTotalDebt ] = useState<number|BigInt>(0);
   const [ availableCollateralTypes, setAvailableCollateralTypes ] = useState<CollateralType[]>([]);
-  const [ activeCollateralTypes, setActiveCollateralTypes ] = useState<CollateralType[]>([]);
   const [ totalVaults, setTotalVaults ] = useState<number>(0);
   const [ vaults, setVaults ] = useState<CdpInfo[]>([]);
   
@@ -86,6 +89,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     
     await fetchCollateralTypes();
     await fetchTotalVaults();
+    await calculateTotalDAIDebt();
     
     setTimeout(() => {
       setIsLoading(false);
@@ -100,6 +104,15 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   const fetchTotalVaults = async () => setTotalVaults(
     web3.utils.toNumber(await DssCdpManagerContract.methods.cdpi().call()) as number
   );
+  
+  const calculateTotalDAIDebt = async () => {
+    const debt = await VatContract.methods.debt().call();
+    const vice = await VatContract.methods.vice().call();
+    
+    setTotalDebt(
+      (BigInt(debt) - BigInt(vice)) / BigInt(RAD)
+    );
+  }
   
   // "cache" cdpId => ilk map, to avoid unnecessary calls
   const getIlkByCdpId = async (cdpId: number, useCachedValueIfExist: boolean = true): Promise<string> => {
@@ -134,12 +147,12 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   const getIlkInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<IlkInfo> => {
     let ilkInfo: IlkInfo|null = JSON.parse(localStorage.getItem(`${ilk}_info`));
     if (!ilkInfo || !useCachedValueIfExist) {
-      const { name, symbol, dec, pip, join, xlip, gem, ...otherIlkInfo } = await IlkRegistryContract.methods.info(ilk).call() as IlkInfo;
+      const { name, symbol, dec, pip, join, xlip, gem, ...otherIlkInfo } = await IlkRegistryContract.methods.info(ilk).call();
       ilkInfo = {
         name,
         symbol,
         dec: +dec.toString(),
-        class: +otherIlkInfo.class.toString(),
+        class: +otherIlkInfo?.class.toString(),
         pip,
         join,
         xlip,
@@ -150,7 +163,6 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     
     return ilkInfo
   }
-  
   
   // keep CdpInfo "cached" too
   const getCdpInfoByCdpId = async (cdpId: number, useCachedValueIfExist: boolean = true): Promise<CdpInfo> => {
@@ -179,63 +191,67 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   }
   
   const calculateCdpCollateralizationRatio = (cdp: CdpInfo): string => {
-    const collateralValue = cdp.collateral * ETH_PRICE_IN_USD;
+    const collateralValue = cdp.collateral * (PRICE_FEED[cdp.ilkInfo?.symbol] || 0);
     
     const collateralizationRatio = collateralValue / cdp.totalDebt;
-    if (isNaN(collateralizationRatio)) return '0';
+    if (isNaN(collateralizationRatio) || !isFinite(collateralizationRatio))
+      return '0';
+    
     return (collateralizationRatio * 100).toFixed(2);
   }
   
-  const searchForCdp = async (roughCdpId: number, size = SEARCH_SIZE) => {
+  const searchForCdp = async (roughCdpId: number, collateralTypes: CollateralType[] = [], size = SEARCH_SIZE) => {
     if (!roughCdpId) {
       setVaults([]);
       return;
     }
+    
     // sort ids first, closest to a roughCdpId
     const vaultIds = [...Array(totalVaults).keys()]
       .sort((a, b) => Math.abs(a - roughCdpId) - Math.abs(b - roughCdpId))
-    
+
     const vaults = [];
     // todo: em I sure about this? what if there is no CDPs near roughCdpId?
     for (let i = 0; i <= totalVaults; i++) {
       const cdpId = vaultIds[i];
       if (!cdpId) continue;
       // exit from loop once when target size is reached
-      // if (vaults.length >= size) break;
-      if (vaults.length >= 1 || !cdpId) break; // todo: remove this once when function is ready
+      if (vaults.length >= size) break;
+      setSearchProgress((100 * (vaults.length || 1)) / size)
+      // if (vaults.length >= 1 || !cdpId) break; // todo: remove this once when function is ready
 
-      // @note: no BathRequest available :( https://github.com/web3/web3.js/issues/6224
-      const ilk = await getIlkByCdpId(cdpId);
-      if (activeCollateralTypes.length <= 0 || activeCollateralTypes.map( val => val.ilk ).indexOf(ilk) >= 0) {
-        const vatInfo: VatInfo = await getVatInfo(ilk);
-        const ilkInfo: IlkInfo = await getIlkInfo(ilk);
+      try {
+        // @note: no BathRequest available :( https://github.com/web3/web3.js/issues/6224
+        const ilk = await getIlkByCdpId(cdpId);
         
-        const cdpInfo: CdpInfo = await getCdpInfoByCdpId(cdpId);
-        cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, vatInfo);
-        cdpInfo.collateralizationRatio = calculateCdpCollateralizationRatio(cdpInfo);
-        cdpInfo.ilkInfo = ilkInfo;
+        if (collateralTypes.length <= 0 || collateralTypes.map( val => val.ilk ).indexOf(ilk) >= 0) {
+          const vatInfo: VatInfo = await getVatInfo(ilk);
+          const ilkInfo: IlkInfo = await getIlkInfo(ilk);
+          
+          const cdpInfo: CdpInfo = await getCdpInfoByCdpId(cdpId);
+          cdpInfo.ilkInfo = ilkInfo;
+          cdpInfo.totalDebt = calculateCdpTotalDebt(cdpInfo, vatInfo);
+          cdpInfo.collateralizationRatio = calculateCdpCollateralizationRatio(cdpInfo);
+          
+          vaults.push(cdpInfo);
+        }
+      } catch (e) {
+        console.error(e);
         
-        vaults.push(cdpInfo);
+        setSearchProgress((100 * (vaults.length || 1) + 1) / size)
       }
     }
     
     setVaults(vaults);
-  }
-  
-  const toggleCollateralType = (type: CollateralType) => {
-    const ind = activeCollateralTypes.indexOf(type)
-    if (ind >= 0) {
-      setActiveCollateralTypes(activeCollateralTypes.filter((_, i) => i !== ind));
-    } else  {
-      setActiveCollateralTypes([...activeCollateralTypes, type]);
-    }
+    setSearchProgress(null);
   }
   
   const contextValue: AppContextValue = {
     vaults,
     isLoading,
     totalVaults,
-    toggleCollateralType,
+    searchProgress,
+    totalDebt,
     collateralTypes: availableCollateralTypes,
     searchForCdps: searchForCdp
   };

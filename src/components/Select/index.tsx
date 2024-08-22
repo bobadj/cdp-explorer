@@ -1,4 +1,4 @@
-import {FC, JSX, useRef, useState} from "react";
+import {FC, JSX, useEffect, useRef, useState} from "react";
 import {useClickOutside} from "../../hooks";
 import classNames from "classnames";
 
@@ -8,9 +8,11 @@ type SelectProps = {
   valueKey: string
   labelKey: string
   options: []
+  onChange?: Function
+  disabled?: boolean
 }
 
-const Select: FC = ({ className, label, valueKey, labelKey, options }: SelectProps): JSX.Element => {
+const Select: FC = ({ className, label, valueKey, labelKey, options, onChange, disabled = false }: SelectProps): JSX.Element => {
   const [ visible, setVisible ] = useState<boolean>(false);
   const [ selectedOptions, setSelectedOptions ] = useState<any[]>([]);
   
@@ -18,18 +20,22 @@ const Select: FC = ({ className, label, valueKey, labelKey, options }: SelectPro
   useClickOutside(ref, () => setVisible(false));
   
   const addOption = (option: any) => {
+    let options = selectedOptions;
     if (isSelected(option)) {
-      setSelectedOptions(selectedOptions.filter((_, i) => i !== selectedOptions.indexOf(option)))
+      options = selectedOptions.filter((_, i) => i !== selectedOptions.indexOf(option));
     } else {
-      setSelectedOptions([...selectedOptions, option]);
+      options = [...options, option]
     }
+    
+    setSelectedOptions(options);
+    if (onChange) onChange(options);
   };
   const getSelectText = () => {
     if (selectedOptions.length > 0) {
       if (selectedOptions.length >= 4) return selectedOptions.length + ' selected'
       return selectedOptions
         .map( opt => opt[labelKey] )
-        .map( value => value.substring(0, 5))
+        .map( value => value.substring(0, 6))
         .slice(0, 3).join(', ');
     }
     return 'All';
@@ -41,12 +47,14 @@ const Select: FC = ({ className, label, valueKey, labelKey, options }: SelectPro
       {label && <span className="text-md">{label}</span>}
       <div
         ref={ref}
-        className="relative bg-surface pe-4 ps-2 text-start border-2 border-slate-300 rounded cursor-pointer min-w-[250px]"
-        onClick={() => setVisible(true)}
+        className={classNames('relative bg-surface pe-4 ps-2 text-start border-2 border-slate-300 rounded cursor-pointer min-w-[250px]', {
+          'bg-slate-300': disabled
+        })}
+        onClick={() => setVisible(!disabled && !visible)}
       >
         <span className="text-start">{getSelectText()}</span>
-        <div className={classNames('absolute bg-surface w-full left-0 top-7 shadow-md max-h-[250px] overflow-auto', {
-          'hidden': !visible
+        <div className={classNames('absolute bg-surface w-full left-0 top-7 shadow-md max-h-[250px] overflow-auto z-10', {
+          'hidden': !visible,
         })}>
           {
             (options || [])

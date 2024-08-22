@@ -4,6 +4,7 @@ import Search from "./Search";
 import Select from "./Select";
 import Table from "./Table";
 import Loader from "./Loader";
+import Progress from "./Progress";
 
 export {
   Button,
@@ -11,5 +12,6 @@ export {
   Search,
   Select,
   Table,
-  Loader
+  Loader,
+  Progress
 }

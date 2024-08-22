@@ -8,11 +8,11 @@ type SearchProps = {
   className?: string
   onChange?: Function
   allow: RegExp
+  disabled?: boolean
 }
 
-const Search: FC = ({ placeholder, className, onChange, allow }: SearchProps): JSX.Element => {
+const Search: FC = ({ placeholder, className, onChange, allow, disabled = false }: SearchProps): JSX.Element => {
   const handleChange = useMemo(() => debounce((ev: ChangeEvent) => {
-    console.log('change triggered')
     const target: HTMLTextAreaElement = ev.target as HTMLTextAreaElement;
     if (onChange) onChange(target.value)
   }), [onChange]);
@@ -26,9 +26,17 @@ const Search: FC = ({ placeholder, className, onChange, allow }: SearchProps): J
   
   return (
     <input type="text"
+           disabled={disabled}
            onKeyDown={handleKeyDown}
            onChange={handleChange}
-           className={classNames('w-full py-4 px-3 text-slate-700 tracking-wider outline-0 bg-slate-100 rounded-3xl text-xl border-2 border-transparent focus:border-primary', className)}
+           className={classNames(
+             'w-full py-4 px-3 text-slate-700 tracking-wider outline-0 bg-slate-100 rounded-3xl text-xl border-2 border-transparent focus:border-primary',
+             {
+               'bg-slate-100': disabled,
+               'cursor-not-allowed': disabled,
+             },
+             className
+           )}
            placeholder={placeholder} />
   )
 }

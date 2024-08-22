@@ -6,6 +6,55 @@ export const VAT_CONTRACT_ADDRESS = '0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B'
 
 export const systemKeyCodes = [ 8, 17, 18, 91, 16, 9, 93, 37, 40, 39, 38 ];
 
-export const ETH_PRICE_IN_USD = 2595.35;
-
+export const WAD = 10 ** 18;
 export const RAY = 10 ** 27;
+export const RAD = 10 ** 45;
+
+// @note: tried to use Spotter to determinate price, but I think I need to be whitelisted
+// @note: "?" - could not find price or price is not accurate
+export const PRICE_FEED = {
+  "WETH": 2623.90,
+  "BAT": 0.1774,
+  "TUSD": 1.0000,
+  "ZRX": 0.3234,
+  "KNC": 0.4596,
+  "MANA": 0.2813,
+  "USDT": 1.0000,
+  "COMP": 50.01,
+  "LRC": 0.1349,
+  "LINK": 11.36,
+  "BAL": 2.05,
+  "YFI": 5226.42,
+  "UNI": 6.99,
+  "renBTC": 60570.30,
+  "AAVE": 138.65,
+  "UNI-V2": 0.814128097571,
+  "RWA001": 0, // ??
+  "RWA002": 0, // ??
+  "RWA003": 0, // ??
+  "RWA004": 0, // ??
+  "RWA005": 0, // ??
+  "RWA006": 0, // ??
+  "PAX": 1.0000,
+  "MATIC": 0.532215707356,
+  "RWA013": 0, // ??
+  "WBTC": 60740.06,
+  "GUSD": 1.0000,
+  "G-UNI": 0.033694,
+  "steCRV": 1.0000, // ??
+  "wstETH": 3087.20,
+  "RWA008": 0, // ?
+  "RWA009": 0, // ?
+  "RWA007": 0, // ?
+  "rETH": 2928.92,
+  "cDAI": 0.02373,
+  "GNO": 168.54,
+  "RWA010": 0, // ?
+  "RWA011": 0, // ?
+  "RWA012": 0, // ?
+  "aDAI": 1.0000,
+  "RWA014": 0, // ?
+  "RWA015": 0, // ?
+  "spDAI": 1.0000,
+  "USDC": 1.0000
+}
