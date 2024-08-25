@@ -10,8 +10,8 @@ export const debounce = (callback: CallableFunction, wait: number = 500) => {
   };
 };
 
-export const numberFormatter = (number: number|BigInt, locale: string = 'en-US') => {
-  return number.toLocaleString(locale, {
+export const numberFormatter = (number: string|number|BigInt, locale: string = 'en-US') => {
+  return (+number).toLocaleString(locale, {
     maximumFractionDigits: number > 1000000 ? 1 : 0,
     notation: number > 1000000 ? 'compact' : "standard"
   });

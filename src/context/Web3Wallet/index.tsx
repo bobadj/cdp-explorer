@@ -52,21 +52,23 @@ export default function Web3WalletProvider({ children }: Web3WalletProviderProps
   const requestAccounts = async () => await window.ethereum.request({ method: "eth_requestAccounts" });
   
   const signMessage = async (messageToSign: string): Promise<string> => {
-    return await web3.eth.personal.sign(
-      messageToSign,
-      accounts[0],
-      ""
-    );
+    return await window.ethereum.request({
+      "method": "personal_sign",
+      "params": [
+        web3.utils.toHex(messageToSign),
+        accounts[0]
+      ]
+    }) as string;
   };
   
   const contextValue: Web3WalletContextValue = {
-    web3,
-    accounts,
+    web3: web3 as Web3,
     chainId,
     latestBlock,
-    isConnected: accounts.length > 0,
+    accounts,
+    connectWallet: requestAccounts,
     signMessage,
-    connectWallet: requestAccounts
+    isConnected: accounts.length > 0
   };
   
   return (

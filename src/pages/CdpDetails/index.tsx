@@ -9,7 +9,7 @@ import {CDPDetailedInfo} from "../../types";
 
 const CdpDetails: FC = (): JSX.Element => {
   const { cdpId } = useParams();
-  const { isConnected, signMessage } = useWeb3Wallet();
+  const { accounts, isConnected, signMessage } = useWeb3Wallet();
   const { isLoading, fetchCdpById } = useAppContext();
   
   const [ signedMessage, setSignedMessage ] = useState<string>();
@@ -96,7 +96,7 @@ const CdpDetails: FC = (): JSX.Element => {
                 </div>
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
                   <span className="text-xs font-bold text-slate-600 items-center">Value invested</span>
-                  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(41318)}</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">${numberFormatter(cdp?.invested || 0)}</span>
                 </div>
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
                   <span className="text-xs font-bold text-slate-600 items-center">Value Withdrawn</span>

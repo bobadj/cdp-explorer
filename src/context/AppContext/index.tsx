@@ -15,11 +15,12 @@ import {
   VAT_CONTRACT_ADDRESS,
   VAULT_INFO_CONTRACT_ADDRESS,
   SPOTTER_CONTRACT_ADDRESS,
-  JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR,
+  JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR, WAD
 } from "../../const";
 import {useWeb3Wallet} from "../../hooks";
 import {AppContextValue} from "../../types/interfaces";
 import {CDPBasicInfo, CDPDetailedInfo, CollateralType, IlkInfo, JugInfo, SpotterInfo, VatInfo} from "../../types";
+import {numberFormatter} from "../../utils";
 
 export const AppContext: Context<AppContextValue> = createContext({} as AppContextValue);
 
@@ -243,14 +244,14 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     setIsLoading(true);
     
     const cdpBasicInfo: CDPBasicInfo = await getCdpBasicInfoById(cdpId);
-    const { mat } = await getSpotterInfoByIlk(web3.utils.asciiToHex(cdpBasicInfo.ilk));
-    const { duty } = await getJugInfoByIlk(web3.utils.asciiToHex(cdpBasicInfo.ilk));
+    const ilk = web3.utils.asciiToHex(cdpBasicInfo.ilk);
+    const { mat } = await getSpotterInfoByIlk(ilk);
+    const { duty } = await getJugInfoByIlk(ilk);
     
     const ilkRatio = ((mat / RAY) * 100).toFixed(2);
     const stabilityFeePercentage = (Math.pow(duty / RAY, SECONDS_IN_YEAR) - 1) * 100;
-    
 
-    setIsLoading(false)
+    setIsLoading(false);
     
     return {
       ...cdpBasicInfo,
