@@ -3,12 +3,17 @@ export const ILK_REGISTRY_CONTRACT_ADDRESS = '0x5a464C28D19848f44199D003BeF5ecc8
 export const DSS_CDP_MANAGER_CONTRACT_ADDRESS = '0x5ef30b9986345249bc32d8928b7ee64de9435e39';
 export const VAULT_INFO_CONTRACT_ADDRESS = '0x68C61AF097b834c68eA6EA5e46aF6c04E8945B2d';
 export const VAT_CONTRACT_ADDRESS = '0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B';
+export const SPOTTER_CONTRACT_ADDRESS = '0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3';
+export const JUG_CONTRACT_ADDRESS = '0x19c0976f590D67707E62397C87829d896Dc0f1F1';
+export const CAT_CONTRACT_ADDRESS = '0x78F2c2AF65126834c51822F56Be0d7469D7A523E';
 
 export const systemKeyCodes = [ 8, 17, 18, 91, 16, 9, 93, 37, 40, 39, 38 ];
 
 export const WAD = 10 ** 18;
 export const RAY = 10 ** 27;
 export const RAD = 10 ** 45;
+
+export const SECONDS_IN_YEAR = 31536000;
 
 // @note: tried to use Spotter to determinate price, but I think I need to be whitelisted
 // @note: "?" - could not find price or price is not accurate

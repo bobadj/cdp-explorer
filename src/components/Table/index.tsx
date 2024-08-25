@@ -1,10 +1,11 @@
 import {FC, JSX, ReactNode} from "react";
 import {numberFormatter} from "../../utils";
 import classNames from "classnames";
-import Progress from "../Progress";
+import arrow from './assets/arrow.svg';
+import type {CDPBasicInfo} from "../../context/AppContext";
 
 type TableProps = {
-  data: any[]
+  data: CDPBasicInfo[]
   emptyTitle: string
   showLoadingAnimation: boolean
   loadingAnimation?: ReactNode
@@ -20,6 +21,7 @@ const Table: FC = ({ data, emptyTitle, showLoadingAnimation = false, loadingAnim
         <th className="py-4 px-3 text-start">Debt</th>
         <th className="py-4 px-3 text-start">Collateral</th>
         <th className="py-4 px-3 text-start">Ratio</th>
+        <th className="py-4 px-3 text-center"></th>
       </tr>
       </thead>
       <tbody>
@@ -43,11 +45,12 @@ const Table: FC = ({ data, emptyTitle, showLoadingAnimation = false, loadingAnim
             (data || [])
               .map( (d, i) => (
                 <tr key={`table__data__${i}`} className={classNames('hover:bg-sky-200 cursor-pointer', { 'bg-slate-200': i % 2 === 0 })}>
-                  <td className="p-3">{d.cdpId}</td>
+                  <td className="p-3">{d.id}</td>
                   <td className="p-3">{d.ilk}</td>
                   <td className="p-3">{numberFormatter(+d.totalDebt)} DAI</td>
-                  <td className="p-3">{numberFormatter(+d.collateral)} {d?.ilkInfo?.symbol}</td>
-                  <td className="p-3">{d.collateralizationRatio}%</td>
+                  <td className="p-3">{numberFormatter(+d.collateral)} {d.currencySymbol}</td>
+                  <td className="p-3">{d.collateralRatio}%</td>
+                  <td><img className="max-h-[25px]" src={arrow} alt=""/></td>
                 </tr>
               ))
       }
