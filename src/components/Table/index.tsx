@@ -1,8 +1,8 @@
 import {FC, JSX, ReactNode} from "react";
 import {numberFormatter} from "../../utils";
 import classNames from "classnames";
+import {CDPBasicInfo} from "../../types";
 import arrow from './assets/arrow.svg';
-import type {CDPBasicInfo} from "../../context/AppContext";
 
 type TableProps = {
   data: CDPBasicInfo[]

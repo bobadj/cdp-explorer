@@ -1,7 +1,7 @@
 import {ChangeEvent, FC, JSX, useMemo} from "react";
 import classNames from "classnames";
 import {debounce} from "../../utils";
-import { systemKeyCodes } from "../../const";
+import {systemKeyCodes} from "../../const";
 
 type SearchProps = {
   placeholder?: string

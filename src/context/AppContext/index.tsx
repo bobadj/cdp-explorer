@@ -1,12 +1,11 @@
 import {Context, createContext, JSX, PropsWithChildren, useEffect, useState} from "react";
-import {Address, Bytes, HexString, Web3} from "web3";
+import {HexString} from "web3";
 import IlkRegistryABI from '../../../abis/IlkRegistry.abi.json';
 import DssCdpManagerABI from '../../../abis/DssCdpManager.abi.json';
 import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
 import VatABI from '../../../abis/Vat.abi.json';
 import SpotterABI from '../../../abis/Spotter.abi.json';
 import JugABI from '../../../abis/Jug.abi.json';
-import CatABI from '../../../abis/Cat.abi.json';
 import {
   DSS_CDP_MANAGER_CONTRACT_ADDRESS,
   ILK_REGISTRY_CONTRACT_ADDRESS,
@@ -16,77 +15,19 @@ import {
   VAT_CONTRACT_ADDRESS,
   VAULT_INFO_CONTRACT_ADDRESS,
   SPOTTER_CONTRACT_ADDRESS,
-  CAT_CONTRACT_ADDRESS,
   JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR,
 } from "../../const";
-
-interface AppContextValue {
-  isLoading: boolean
-  totalVaults: number
-  collateralTypes: CollateralType[]
-  searchForCdps: Function
-  fetchCdpById: Function
-  vaults: CDPBasicInfo[]
-  searchProgress: number|null
-  totalDebt: number|BigInt
-}
-
-export type CollateralType = {
-  ilk: Bytes
-  name: string
-}
-
-export type VatInfo = {
-  Art: string
-  dust: string
-  line: string
-  rate: string
-  spot: string
-}
-
-export type IlkInfo = {
-  name: string
-  symbol: string
-  class: number
-  dec: number
-  gem: Address
-  pip: Address
-  join: Address
-  xlip: Address
-}
-
-export type SpotterInfo = {
-  pip: Address
-  mat: number|string
-}
-
-export type JugInfo = {
-  duty: number|string
-  rho: number|string
-}
-
-export type CDPBasicInfo = {
-  id: number
-  owner: Address|string,
-  ilk: string
-  collateral: string
-  debt: string
-  totalDebt: string
-  collateralRatio?: string|number
-  currency: string
-  currencySymbol: string
-}
-
-export type CDPDetailedInfo = CDPBasicInfo & {
-  ilkRation: string|number
-  stabilityFee: string|number
-}
+import {useWeb3Wallet} from "../../hooks";
+import {AppContextValue} from "../../types/interfaces";
+import {CDPBasicInfo, CDPDetailedInfo, CollateralType, IlkInfo, JugInfo, SpotterInfo, VatInfo} from "../../types";
 
 export const AppContext: Context<AppContextValue> = createContext({} as AppContextValue);
 
 type AppProviderProps = PropsWithChildren & {}
 
 export default function AppProvider({ children }: AppProviderProps): JSX.Element {
+  const { web3 } = useWeb3Wallet();
+  
   const [ isLoading, setIsLoading ] = useState<boolean>(false);
   const [ searchProgress, setSearchProgress ] = useState<number|null>(null);
   const [ totalDebt, setTotalDebt ] = useState<number|BigInt>(0);
@@ -94,14 +35,12 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   const [ totalVaults, setTotalVaults ] = useState<number>(0);
   const [ vaults, setVaults ] = useState<CDPBasicInfo[]>([]);
   
-  const web3 = new Web3(Web3.givenProvider || `https://eth-mainnet.g.alchemy.com/v2/tXDmSv5BEVKZ6Xj5uzpdWE3wMdX3DhtU`);
   const IlkRegistryContract = new web3.eth.Contract(IlkRegistryABI, ILK_REGISTRY_CONTRACT_ADDRESS);
   const DssCdpManagerContract = new web3.eth.Contract(DssCdpManagerABI, DSS_CDP_MANAGER_CONTRACT_ADDRESS);
   const VaultInfoContract = new web3.eth.Contract(VaultInfoABI, VAULT_INFO_CONTRACT_ADDRESS);
   const VatContract = new web3.eth.Contract(VatABI, VAT_CONTRACT_ADDRESS);
   const SpotterContract = new web3.eth.Contract(SpotterABI, SPOTTER_CONTRACT_ADDRESS);
   const JugContract = new web3.eth.Contract(JugABI, JUG_CONTRACT_ADDRESS);
-  const CatContract = new web3.eth.Contract(CatABI, CAT_CONTRACT_ADDRESS);
   
   const SEARCH_SIZE = 20;
   
@@ -154,7 +93,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   
   // "cache" vatInfo, there is no need ( or there is? ) to fetch it already exist
   const getVatInfo = async (ilk: string, useCachedValueIfExist: boolean = true): Promise<VatInfo> => {
-    let vatInfo: VatInfo|null = JSON.parse(localStorage.getItem(`${ilk}_vat_info`));
+    let vatInfo: VatInfo|null = JSON.parse(localStorage.getItem(`${ilk}_vat_info`) as string);
     if (!vatInfo || !useCachedValueIfExist) {
       const { Art, dust, line, rate, spot } = await VatContract.methods.ilks(ilk).call();
       vatInfo = {
@@ -288,7 +227,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
         }
 
         // @note: there was issue with "too many requests per second", therefore delay is introduced
-        await new Promise(_ => setTimeout(_, 300));
+        await new Promise(_ => setTimeout(_, 100));
       } catch (e) {
         console.error(e);
 

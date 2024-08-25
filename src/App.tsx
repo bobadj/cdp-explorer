@@ -1,12 +1,14 @@
 import {RouterProvider} from "react-router-dom";
-import {AppProvider} from "./context";
+import {AppProvider, Web3WalletProvider} from "./context";
 import {router} from "./router";
 
 function App() {
   return (
-    <AppProvider>
-      <RouterProvider router={router()} />
-    </AppProvider>
+    <Web3WalletProvider>
+      <AppProvider>
+        <RouterProvider router={router()} />
+      </AppProvider>
+    </Web3WalletProvider>
   )
 }
 

@@ -3,6 +3,7 @@ import {FC, PropsWithChildren, ReactNode, useEffect, useState} from "react";
 type LoaderProps = PropsWithChildren & {
   isLoading: boolean
 };
+
 const Loader: FC = ({ children, isLoading }: LoaderProps): ReactNode => {
   const [ showLoader, setShowLoader ] = useState<boolean>(false);
   

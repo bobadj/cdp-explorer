@@ -1,16 +1,18 @@
 import {FC, JSX, useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import {Button, Loader} from "../../components";
-import {ButtonClassTypes} from "../../components/Button";
 import {formatAddress, currencyFormatter, numberFormatter} from "../../utils";
-import {useAppContext} from "../../hooks";
-import type {CDPBasicInfo, CDPDetailedInfo} from "../../context/AppContext";
+import {useAppContext, useWeb3Wallet} from "../../hooks";
 import {PRICE_FEED} from "../../const";
+import {ButtonClassTypes} from "../../types/enum";
+import {CDPDetailedInfo} from "../../types";
 
 const CdpDetails: FC = (): JSX.Element => {
   const { cdpId } = useParams();
+  const { isConnected, signMessage } = useWeb3Wallet();
   const { isLoading, fetchCdpById } = useAppContext();
   
+  const [ signedMessage, setSignedMessage ] = useState<string>();
   const [ cdp, setCdp ] = useState<CDPDetailedInfo>()
   
   useEffect(() => {
@@ -21,17 +23,28 @@ const CdpDetails: FC = (): JSX.Element => {
     await fetchCdpById(cdpId)
   );
   
+  const handleMessageSign = async () => setSignedMessage(
+    await signMessage('Ovo je moj CDP')
+  );
+  
   return (
     <Loader isLoading={isLoading}>
       <div className="bg-surface container pt-12 mx-auto">
         <div className="w-full flex flex-col md:flex-row justify-between items-center bg-white rounded-md shadow-md p-8">
           <div className="text-center md:text-start">
             <h2 className="font-bold text-2xl mb">Position owner: {formatAddress(cdp?.owner)}</h2>
-            <p className="text-sm">Please connect your wallet in order to sing.</p>
+            { !isConnected && <p className="text-sm">Please connect your wallet in order to sing.</p>}
           </div>
-          <Button className="px-14 py-3 mt-5 md:mt-0" classType={ButtonClassTypes.decorative}>
-            Ovo je moj CDP
-          </Button>
+          {
+            !signedMessage
+            &&
+              <Button className="px-14 py-3 mt-5 md:mt-0"
+                      onClick={handleMessageSign}
+                      disabled={!isConnected}
+                      classType={ButtonClassTypes.decorative}>
+                  Ovo je moj CDP
+              </Button>
+          }
         </div>
         <div className="flex flex-col gap-5 w-full mt-5 bg-white rounded-md shadow-md px-8 py-5">
           <div className="flex flex-col lg:flex-row">

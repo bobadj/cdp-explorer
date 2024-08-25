@@ -1,4 +1,4 @@
-import {FC, JSX, useEffect, useRef, useState} from "react";
+import {FC, JSX, useRef, useState} from "react";
 import {useClickOutside} from "../../hooks";
 import classNames from "classnames";
 

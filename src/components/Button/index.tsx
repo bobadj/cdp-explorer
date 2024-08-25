@@ -1,11 +1,7 @@
 import {FC, JSX, MouseEventHandler, PropsWithChildren} from "react";
 import classNames from "classnames";
+import {ButtonClassTypes} from "../../types/enum";
 
-export enum ButtonClassTypes {
-  primary = "primary",
-  secondary = "secondary",
-  decorative = 'decorative'
-}
 
 type ButtonProps = PropsWithChildren & {
   className?: string,
