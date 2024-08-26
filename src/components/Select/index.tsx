@@ -8,15 +8,15 @@ type SelectProps = {
   valueKey: string
   labelKey: string
   options: []
-  onChange?: Function
+  onChange?: (options: any[]) => void
   disabled?: boolean
 }
 
-const Select: FC = ({ className, label, valueKey, labelKey, options, onChange, disabled = false }: SelectProps): JSX.Element => {
+const Select: FC = ({ className, label, labelKey, options, onChange, onFocus, disabled = false }: SelectProps): JSX.Element => {
   const [ visible, setVisible ] = useState<boolean>(false);
   const [ selectedOptions, setSelectedOptions ] = useState<any[]>([]);
   
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement|null>(null);
   useClickOutside(ref, () => setVisible(false));
   
   const addOption = (option: any) => {
@@ -43,7 +43,7 @@ const Select: FC = ({ className, label, valueKey, labelKey, options, onChange, d
   const isSelected = (option: any) => selectedOptions.indexOf(option) >= 0;
   
   return (
-    <div className={classNames('flex flex-row gap-3 mb-4 items-center relative', className)}>
+    <div className={classNames('flex flex-row gap-3 items-center relative', className)}>
       {label && <span className="text-md">{label}</span>}
       <div
         ref={ref}
@@ -53,7 +53,7 @@ const Select: FC = ({ className, label, valueKey, labelKey, options, onChange, d
         onClick={() => setVisible(!disabled && !visible)}
       >
         <span className="text-start">{getSelectText()}</span>
-        <div className={classNames('absolute bg-surface w-full left-0 top-7 shadow-md max-h-[250px] overflow-auto z-10', {
+        <div className={classNames('absolute bg-surface w-full left-0 top-7 shadow-md max-h-[150px] overflow-auto z-10', {
           'hidden': !visible,
         })}>
           {

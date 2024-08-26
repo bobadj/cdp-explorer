@@ -1,4 +1,4 @@
-import {ChangeEvent, FC, JSX, useMemo} from "react";
+import {ChangeEvent, FC, FocusEventHandler, JSX, useMemo} from "react";
 import classNames from "classnames";
 import {debounce} from "../../utils";
 import {systemKeyCodes} from "../../const";
@@ -6,12 +6,13 @@ import {systemKeyCodes} from "../../const";
 type SearchProps = {
   placeholder?: string
   className?: string
-  onChange?: Function
+  onChange?: (value: string) => void
+  onFocus?: FocusEventHandler
   allow: RegExp
   disabled?: boolean
 }
 
-const Search: FC = ({ placeholder, className, onChange, allow, disabled = false }: SearchProps): JSX.Element => {
+const Search: FC = ({ placeholder, className, onChange, onFocus, allow, disabled = false }: SearchProps): JSX.Element => {
   const handleChange = useMemo(() => debounce((ev: ChangeEvent) => {
     const target: HTMLTextAreaElement = ev.target as HTMLTextAreaElement;
     if (onChange) onChange(target.value)
@@ -29,10 +30,10 @@ const Search: FC = ({ placeholder, className, onChange, allow, disabled = false 
            disabled={disabled}
            onKeyDown={handleKeyDown}
            onChange={handleChange}
+           onFocus={onFocus}
            className={classNames(
-             'w-full py-4 px-3 text-slate-700 tracking-wider outline-0 bg-slate-100 rounded-3xl text-xl border-2 border-transparent focus:border-primary',
+             'w-full bg-white shadow-none text-slate-700 text-xl rounded outline-0 top-5 py-3 px-3',
              {
-               'bg-slate-100': disabled,
                'cursor-not-allowed': disabled,
              },
              className

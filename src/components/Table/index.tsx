@@ -1,35 +1,40 @@
 import {FC, JSX, ReactNode} from "react";
 import {numberFormatter} from "../../utils";
-import classNames from "classnames";
 import {CDPBasicInfo} from "../../types";
+import classNames from "classnames";
 import arrow from './assets/arrow.svg';
 
 type TableProps = {
+  className?: string
   data: CDPBasicInfo[]
   emptyTitle: string
   showLoadingAnimation: boolean
+  hideHeader: boolean
   loadingAnimation?: ReactNode
   onClick?: (id: number) => void
 }
 
-const Table: FC = ({ data, emptyTitle, onClick, showLoadingAnimation = false, loadingAnimation }: TableProps): JSX.Element => {
+const Table: FC = ({ className, data, emptyTitle, onClick, loadingAnimation, hideHeader = false, showLoadingAnimation = false }: TableProps): JSX.Element => {
   const handleClick = (id: number) => {
     if (onClick)
       onClick(id)
   }
   
   return (
-    <table className="border-collapse bg-surface table-auto w-full text-sm shadow-lg rounded-md min-h-[250px]">
-      <thead className="border-b-2 border-b-slate-200">
-      <tr>
-        <th className="py-4 px-3 text-start">ID</th>
-        <th className="py-4 px-3 text-start">Collateral Type</th>
-        <th className="py-4 px-3 text-start">Debt</th>
-        <th className="py-4 px-3 text-start">Collateral</th>
-        <th className="py-4 px-3 text-start">Ratio</th>
-        <th className="py-4 px-3 text-center"></th>
-      </tr>
-      </thead>
+    <table className={classNames('border-collapse table-auto w-full text-sm rounded-md', className)}>
+      {
+        !hideHeader &&
+          <thead className="border-b-2 border-b-slate-200">
+            <tr>
+                <th className="py-4 px-3 text-start">ID</th>
+                <th className="py-4 px-3 text-start">Collateral Type</th>
+                <th className="py-4 px-3 text-start">Debt</th>
+                <th className="py-4 px-3 text-start">Collateral</th>
+                <th className="py-4 px-3 text-start">Ratio</th>
+                <th className="py-4 px-3 text-center"></th>
+            </tr>
+          </thead>
+      }
       <tbody>
       {
         showLoadingAnimation

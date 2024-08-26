@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import { Explorer } from "../pages";
+import { Explorer, CdpDetails } from "../pages";
 import PageLayout from "../layout/PageLayout";
-import CdpDetails from "../pages/CdpDetails";
 
 export const EXPLORER_PATH: string = '/';
 
