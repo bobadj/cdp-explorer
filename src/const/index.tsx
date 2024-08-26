@@ -18,7 +18,7 @@ export const SECONDS_IN_YEAR = 31536000;
 // @note: tried to use Spotter to determinate price, but I think I need to be whitelisted
 // @note: "?" - could not find price or price is not accurate
 export const PRICE_FEED = {
-  "WETH": 2744.66499999999999999999999999925,
+  "WETH": 2744.66,
   "BAT": 0.1774,
   "TUSD": 1.0000,
   "ZRX": 0.3234,
@@ -62,4 +62,6 @@ export const PRICE_FEED = {
   "RWA015": 0, // ?
   "spDAI": 1.0000,
   "USDC": 1.0000
-}
+};
+
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';

@@ -17,7 +17,7 @@ import {
   VAULT_INFO_CONTRACT_ADDRESS,
   SPOTTER_CONTRACT_ADDRESS,
   JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR,
-  CAT_CONTRACT_ADDRESS, WAD
+  CAT_CONTRACT_ADDRESS, WAD, ZERO_ADDRESS
 } from "../../const";
 import {useWeb3Wallet} from "../../hooks";
 import {AppContextValue} from "../../types/interfaces";
@@ -31,7 +31,6 @@ import {
   SpotterInfo,
   VatInfo
 } from "../../types";
-import {numberFormatter} from "../../utils";
 
 export const AppContext: Context<AppContextValue> = createContext({} as AppContextValue);
 
@@ -282,11 +281,13 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const ilk = web3.utils.asciiToHex(cdpBasicInfo.ilk);
     const { mat } = await getSpotterInfoByIlk(ilk);
     const { duty } = await getJugInfoByIlk(ilk);
-    const { chop } = await getCatInfoByIlk(ilk);
+    const { chop, flip } = await getCatInfoByIlk(ilk);
     
     const ilkRatio = ((mat / RAY) * 100).toFixed(2);
     const stabilityFeePercentage = (Math.pow(duty / RAY, SECONDS_IN_YEAR) - 1) * 100;
-    const liquidationFeePercentage = ((chop / RAY) - 1) * 100;
+    let liquidationFeePercentage = ((chop / RAY) - 1) * 100;
+    if (flip === ZERO_ADDRESS)
+      liquidationFeePercentage = 0;
     
     setIsLoading(false);
     return {
