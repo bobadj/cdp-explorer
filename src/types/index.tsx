@@ -34,9 +34,15 @@ export type JugInfo = {
   rho: number|string
 }
 
+export type CatInfo = {
+  flip: Address
+  chop: number|string
+  lump: number|string
+}
+
 export type CDPBasicInfo = {
   id: number
-  owner: Address|string,
+  owner: Address|string
   ilk: string
   collateral: string
   debt: string
@@ -44,9 +50,12 @@ export type CDPBasicInfo = {
   collateralRatio?: string|number
   currency: string
   currencySymbol: string
+  debtCelling: string|number
+  minDebt: string|number
 }
 
 export type CDPDetailedInfo = CDPBasicInfo & {
   ilkRation: string|number
   stabilityFee: string|number
+  liquidationFee: string|number
 }

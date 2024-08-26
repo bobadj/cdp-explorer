@@ -9,9 +9,15 @@ type TableProps = {
   emptyTitle: string
   showLoadingAnimation: boolean
   loadingAnimation?: ReactNode
+  onClick?: (id: number) => void
 }
 
-const Table: FC = ({ data, emptyTitle, showLoadingAnimation = false, loadingAnimation }: TableProps): JSX.Element => {
+const Table: FC = ({ data, emptyTitle, onClick, showLoadingAnimation = false, loadingAnimation }: TableProps): JSX.Element => {
+  const handleClick = (id: number) => {
+    if (onClick)
+      onClick(id)
+  }
+  
   return (
     <table className="border-collapse bg-surface table-auto w-full text-sm shadow-lg rounded-md min-h-[250px]">
       <thead className="border-b-2 border-b-slate-200">
@@ -44,7 +50,9 @@ const Table: FC = ({ data, emptyTitle, showLoadingAnimation = false, loadingAnim
             :
             (data || [])
               .map( (d, i) => (
-                <tr key={`table__data__${i}`} className={classNames('hover:bg-sky-200 cursor-pointer', { 'bg-slate-200': i % 2 === 0 })}>
+                <tr key={`table__data__${i}`}
+                    onClick={() => handleClick(d.id)}
+                    className={classNames('hover:bg-sky-200 cursor-pointer', { 'bg-slate-200': i % 2 === 0 })}>
                   <td className="p-3">{d.id}</td>
                   <td className="p-3">{d.ilk}</td>
                   <td className="p-3">{numberFormatter(+d.totalDebt)} DAI</td>

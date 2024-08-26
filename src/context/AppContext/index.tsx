@@ -6,6 +6,7 @@ import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
 import VatABI from '../../../abis/Vat.abi.json';
 import SpotterABI from '../../../abis/Spotter.abi.json';
 import JugABI from '../../../abis/Jug.abi.json';
+import CatABI from '../../../abis/Cat.abi.json';
 import {
   DSS_CDP_MANAGER_CONTRACT_ADDRESS,
   ILK_REGISTRY_CONTRACT_ADDRESS,
@@ -15,11 +16,21 @@ import {
   VAT_CONTRACT_ADDRESS,
   VAULT_INFO_CONTRACT_ADDRESS,
   SPOTTER_CONTRACT_ADDRESS,
-  JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR, WAD
+  JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR,
+  CAT_CONTRACT_ADDRESS, WAD
 } from "../../const";
 import {useWeb3Wallet} from "../../hooks";
 import {AppContextValue} from "../../types/interfaces";
-import {CDPBasicInfo, CDPDetailedInfo, CollateralType, IlkInfo, JugInfo, SpotterInfo, VatInfo} from "../../types";
+import {
+  CatInfo,
+  CDPBasicInfo,
+  CDPDetailedInfo,
+  CollateralType,
+  IlkInfo,
+  JugInfo,
+  SpotterInfo,
+  VatInfo
+} from "../../types";
 import {numberFormatter} from "../../utils";
 
 export const AppContext: Context<AppContextValue> = createContext({} as AppContextValue);
@@ -42,6 +53,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   const VatContract = new web3.eth.Contract(VatABI, VAT_CONTRACT_ADDRESS);
   const SpotterContract = new web3.eth.Contract(SpotterABI, SPOTTER_CONTRACT_ADDRESS);
   const JugContract = new web3.eth.Contract(JugABI, JUG_CONTRACT_ADDRESS);
+  const CatContract = new web3.eth.Contract(CatABI, CAT_CONTRACT_ADDRESS);
   
   const SEARCH_SIZE = 20;
   
@@ -158,12 +170,29 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     return jugInfo
   }
   
+  const getCatInfoByIlk = async (ilk: string|HexString, useCachedValueIfExist: boolean = true): Promise<CatInfo> => {
+    let catInfo: CatInfo|null = JSON.parse(localStorage.getItem(`${ilk}_cat_info`));
+    if (!catInfo || !useCachedValueIfExist) {
+      const { flip, chop, lump } = await CatContract.methods.ilks(ilk).call();
+      catInfo = {
+        flip,
+        chop: chop.toString(),
+        lump: lump.toString()
+      };
+      localStorage.setItem(`${ilk}_cat_info`, JSON.stringify(catInfo));
+    }
+    
+    return catInfo
+  }
+  
   const getCdpBasicInfoById = async (cdpId: number): Promise<CDPBasicInfo> => {
     const { collateral, debt, ilk, owner } = await VaultInfoContract.methods.getCdpInfo(cdpId).call();
-    const { rate }: VatInfo = await getVatInfo(ilk);
+    const { rate, line, dust }: VatInfo = await getVatInfo(ilk);
     const { symbol, name }: IlkInfo = await getIlkInfo(ilk);
     
     const totalDebt = calculateCdpTotalDebt(debt, rate);
+    const debtCelling = calculateDebtCelling(line);
+    const minDebt = calculateMinDebt(dust);
     
     return {
       id: cdpId,
@@ -174,7 +203,9 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
       totalDebt: totalDebt,
       collateralRatio: calculateCollateralRatio(collateral, totalDebt, symbol),
       currency: name,
-      currencySymbol: symbol
+      currencySymbol: symbol,
+      debtCelling: debtCelling,
+      minDebt
     };
   }
   
@@ -186,6 +217,10 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
       'ether'
     );
   }
+  
+  const calculateDebtCelling = (line: number|string|BigInt): number => line / RAD;
+  
+  const calculateMinDebt = (dust: number|string|BigInt): number => dust / RAD
   
   const calculateCollateralRatio = (collateral: string|number|BigInt, debt: string|number|BigInt, currency: string): string => {
     const collateralValue = web3.utils.fromWei(collateral, 'ether') * (PRICE_FEED[currency] || 0);
@@ -247,15 +282,17 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const ilk = web3.utils.asciiToHex(cdpBasicInfo.ilk);
     const { mat } = await getSpotterInfoByIlk(ilk);
     const { duty } = await getJugInfoByIlk(ilk);
+    const { chop } = await getCatInfoByIlk(ilk);
     
     const ilkRatio = ((mat / RAY) * 100).toFixed(2);
     const stabilityFeePercentage = (Math.pow(duty / RAY, SECONDS_IN_YEAR) - 1) * 100;
-
-    setIsLoading(false);
+    const liquidationFeePercentage = ((chop / RAY) - 1) * 100;
     
+    setIsLoading(false);
     return {
       ...cdpBasicInfo,
       ilkRation: ilkRatio,
+      liquidationFee: liquidationFeePercentage.toFixed(2),
       stabilityFee: stabilityFeePercentage.toFixed(2)
     }
   }

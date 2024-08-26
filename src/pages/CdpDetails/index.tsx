@@ -59,7 +59,7 @@ const CdpDetails: FC = (): JSX.Element => {
                   <div className="flex flex-col">
                     <span className="text-md font-light">Collateral:</span>
                     <span className="text-4xl">
-                      {numberFormatter(+cdp?.collateral.toString())} <span className="text-lg">{cdp?.currencySymbol}</span>
+                      {numberFormatter(cdp?.collateral.toString())} <span className="text-lg">{cdp?.currencySymbol}</span>
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -86,30 +86,30 @@ const CdpDetails: FC = (): JSX.Element => {
                   <span className="text-xs font-bold text-slate-600 items-center">Stability Fee</span>
                   <span className="text-xs font-bold text-slate-600 items-center">{cdp?.stabilityFee}%</span>
                 </div>
-                {/*<div className="flex flex-row justify-between border-b border-slate-400 py-2">*/}
-                {/*  <span className="text-xs font-bold text-slate-600 items-center">Liquidation Fee</span>*/}
-                {/*  <span className="text-xs font-bold text-slate-600 items-center">13.00%</span>*/}
-                {/*</div>*/}
+                <div className="flex flex-row justify-between border-b border-slate-400 py-2">
+                  <span className="text-xs font-bold text-slate-600 items-center">Liquidation Fee</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">{cdp?.liquidationFee}%</span>
+                </div>
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
                   <span className="text-xs font-bold text-slate-600 items-center">Collateral ratio</span>
                   <span className="text-xs font-bold text-slate-600 items-center">{cdp?.ilkRation}%</span>
                 </div>
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
-                  <span className="text-xs font-bold text-slate-600 items-center">Value invested</span>
-                  <span className="text-xs font-bold text-slate-600 items-center">${numberFormatter(cdp?.invested || 0)}</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">Debt celling</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">{numberFormatter(cdp?.debtCelling || 0)} DAI</span>
                 </div>
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
-                  <span className="text-xs font-bold text-slate-600 items-center">Value Withdrawn</span>
-                  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(42055)}</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">Min. debt</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">{numberFormatter(+cdp?.minDebt)} DAI</span>
                 </div>
-                <div className="flex flex-row justify-between border-b border-slate-400 py-2">
-                  <span className="text-xs font-bold text-slate-600 items-center">CDP Balance</span>
-                  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(7500)}</span>
-                </div>
-                <div className="flex flex-row justify-between border-b border-slate-400 py-2">
-                  <span className="text-xs font-bold text-slate-600 items-center">Lifetime Profit</span>
-                  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(737.34)}</span>
-                </div>
+                {/*<div className="flex flex-row justify-between border-b border-slate-400 py-2">*/}
+                {/*  <span className="text-xs font-bold text-slate-600 items-center">CDP Balance</span>*/}
+                {/*  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(7500)}</span>*/}
+                {/*</div>*/}
+                {/*<div className="flex flex-row justify-between border-b border-slate-400 py-2">*/}
+                {/*  <span className="text-xs font-bold text-slate-600 items-center">Lifetime Profit</span>*/}
+                {/*  <span className="text-xs font-bold text-slate-600 items-center">{currencyFormatter(737.34)}</span>*/}
+                {/*</div>*/}
               </div>
             </div>
           </div>
