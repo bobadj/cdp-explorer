@@ -17,7 +17,7 @@ import {
   VAULT_INFO_CONTRACT_ADDRESS,
   SPOTTER_CONTRACT_ADDRESS,
   JUG_CONTRACT_ADDRESS, SECONDS_IN_YEAR,
-  CAT_CONTRACT_ADDRESS, WAD, ZERO_ADDRESS
+  CAT_CONTRACT_ADDRESS, ZERO_ADDRESS
 } from "../../const";
 import {useWeb3Wallet} from "../../hooks";
 import {AppContextValue} from "../../types/interfaces";
@@ -232,10 +232,8 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   }
   
   const searchForCdp = async (roughCdpId: number, collateralTypes: CollateralType[] = [], size = SEARCH_SIZE) => {
-    if (!roughCdpId) {
-      setVaults([]);
-      return;
-    }
+    setVaults([]);
+    if (!roughCdpId) return;
     
     // sort ids first, closest to a roughCdpId
     const vaultIds = [...Array(totalVaults).keys()]
