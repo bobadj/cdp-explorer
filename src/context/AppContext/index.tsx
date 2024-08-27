@@ -68,9 +68,10 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     await fetchTotalVaults();
     await calculateTotalDAIDebt();
     
+    // delay loader a bit, just for smoother experience
     setTimeout(() => {
       setIsLoading(false);
-    }, 500)
+    }, 500);
   }
   
   const fetchCollateralTypes = async () => setAvailableCollateralTypes(
@@ -312,7 +313,10 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const maxDebt = calculateMaxDebt(cdpBasicInfo, BigInt(mat));
     const liquidationFee = calculateLiquidationFee(chop, flip);
     
-    setIsLoading(false);
+    // delay loader a bit, just for smoother experience
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
     return {
       ...cdpBasicInfo,
       ilkRation: ilkRatio.toFixed(2),

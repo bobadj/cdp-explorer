@@ -7,6 +7,7 @@ import Loader from "./Loader";
 import Progress from "./Progress";
 import Hero from "./Hero";
 import AdvancedSearch from "./AdvancedSearch";
+import CDPSummary from "./CDPSummary";
 
 export {
   Button,
@@ -17,5 +18,6 @@ export {
   Loader,
   Progress,
   Hero,
-  AdvancedSearch
+  AdvancedSearch,
+  CDPSummary
 }
