@@ -1,5 +1,5 @@
 import {Context, createContext, JSX, PropsWithChildren, useEffect, useState} from "react";
-import {HexString} from "web3";
+import {Address, HexString} from "web3";
 import IlkRegistryABI from '../../../abis/IlkRegistry.abi.json';
 import DssCdpManagerABI from '../../../abis/DssCdpManager.abi.json';
 import VaultInfoABI from '../../../abis/VaultInfo.abi.json';
@@ -219,7 +219,32 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
   
   const calculateDebtCelling = (line: number|string|BigInt): number => line / RAD;
   
-  const calculateMinDebt = (dust: number|string|BigInt): number => dust / RAD
+  const calculateMinDebt = (dust: number|string|BigInt): number => dust / RAD;
+  
+  const calculateIlkRatio = (mat: string|number): number => (mat / RAY) * 100;
+  
+  const calculateStabilityFee = (duty: string|number) => (Math.pow(duty / RAY, SECONDS_IN_YEAR) - 1) * 100;
+  
+  const calculateLiquidationFee = (chop: string|number, flip: string|Address) => {
+    let liquidationFee = ((chop / RAY) - 1) * 100;
+    if (flip === ZERO_ADDRESS)
+      liquidationFee = 0;
+    
+    return liquidationFee;
+  }
+  
+  const calculateMaxWithdrawal = (cdp: CDPBasicInfo, mat: BigInt): number => {
+    const liquidationRatio = parseFloat(mat.toString()) / RAY;
+    const requiredCollateral = (cdp.totalDebt * liquidationRatio) / PRICE_FEED[cdp.currencySymbol];
+
+    return cdp.collateral - requiredCollateral;
+  }
+  
+  const calculateMaxDebt = (cdp: CDPBasicInfo, mat: BigInt): number => {
+    const liquidationRatio = parseFloat(mat.toString()) / RAY;
+
+    return (cdp.collateral * PRICE_FEED[cdp.currencySymbol]) / liquidationRatio;
+  }
   
   const calculateCollateralRatio = (collateral: string|number|BigInt, debt: string|number|BigInt, currency: string): string => {
     const collateralValue = web3.utils.fromWei(collateral, 'ether') * (PRICE_FEED[currency] || 0);
@@ -272,7 +297,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     setSearchProgress(null);
   }
   
-  const fetchCdpById = async (cdpId: number): Promise<CDPDetailedInfo> => {
+  const fetchCdpDetailedInfoById = async (cdpId: number): Promise<CDPDetailedInfo> => {
     setIsLoading(true);
     
     const cdpBasicInfo: CDPBasicInfo = await getCdpBasicInfoById(cdpId);
@@ -281,18 +306,20 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const { duty } = await getJugInfoByIlk(ilk);
     const { chop, flip } = await getCatInfoByIlk(ilk);
     
-    const ilkRatio = ((mat / RAY) * 100).toFixed(2);
-    const stabilityFeePercentage = (Math.pow(duty / RAY, SECONDS_IN_YEAR) - 1) * 100;
-    let liquidationFeePercentage = ((chop / RAY) - 1) * 100;
-    if (flip === ZERO_ADDRESS)
-      liquidationFeePercentage = 0;
+    const ilkRatio = calculateIlkRatio(mat);
+    const stabilityFee = calculateStabilityFee(duty);
+    const maxWithdrawal = calculateMaxWithdrawal(cdpBasicInfo, BigInt(mat));
+    const maxDebt = calculateMaxDebt(cdpBasicInfo, BigInt(mat));
+    const liquidationFee = calculateLiquidationFee(chop, flip);
     
     setIsLoading(false);
     return {
       ...cdpBasicInfo,
-      ilkRation: ilkRatio,
-      liquidationFee: liquidationFeePercentage.toFixed(2),
-      stabilityFee: stabilityFeePercentage.toFixed(2)
+      ilkRation: ilkRatio.toFixed(2),
+      liquidationFee: liquidationFee.toFixed(2),
+      stabilityFee: stabilityFee.toFixed(2),
+      maxWithdrawal: maxWithdrawal.toFixed(2),
+      maxDebt: maxDebt.toFixed(2),
     }
   }
   
@@ -304,7 +331,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     totalDebt,
     collateralTypes: availableCollateralTypes,
     searchForCdps: searchForCdp,
-    fetchCdpById
+    fetchCdpDetailedInfoById
   };
   
   return (

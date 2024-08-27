@@ -10,7 +10,7 @@ import {CDPDetailedInfo} from "../../types";
 const CdpDetails: FC = (): JSX.Element => {
   const { cdpId } = useParams();
   const { isConnected, signMessage } = useWeb3Wallet();
-  const { isLoading, fetchCdpById } = useAppContext();
+  const { isLoading, fetchCdpDetailedInfoById } = useAppContext();
   
   const [ signedMessage, setSignedMessage ] = useState<string>();
   const [ cdp, setCdp ] = useState<CDPDetailedInfo>()
@@ -20,7 +20,7 @@ const CdpDetails: FC = (): JSX.Element => {
   }, [cdpId]);
   
   const getCdpById = async (cdpId) => setCdp(
-    await fetchCdpById(cdpId)
+    await fetchCdpDetailedInfoById(cdpId)
   );
   
   const handleMessageSign = async () => setSignedMessage(
@@ -59,7 +59,7 @@ const CdpDetails: FC = (): JSX.Element => {
                   <div className="flex flex-col">
                     <span className="text-md font-light">Collateral:</span>
                     <span className="text-4xl">
-                      {numberFormatter(cdp?.collateral.toString())} <span className="text-lg">{cdp?.currencySymbol}</span>
+                      {numberFormatter(cdp?.collateral.toString() || 0)} <span className="text-lg">{cdp?.currencySymbol}</span>
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -101,6 +101,14 @@ const CdpDetails: FC = (): JSX.Element => {
                 <div className="flex flex-row justify-between border-b border-slate-400 py-2">
                   <span className="text-xs font-bold text-slate-600 items-center">Min. debt</span>
                   <span className="text-xs font-bold text-slate-600 items-center">{numberFormatter(+cdp?.minDebt)} DAI</span>
+                </div>
+                <div className="flex flex-row justify-between border-b border-slate-400 py-2">
+                  <span className="text-xs font-bold text-slate-600 items-center">Max. debt</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">{numberFormatter(+cdp?.maxDebt)} DAI</span>
+                </div>
+                <div className="flex flex-row justify-between border-b border-slate-400 py-2">
+                  <span className="text-xs font-bold text-slate-600 items-center">Max. withdrawal</span>
+                  <span className="text-xs font-bold text-slate-600 items-center">{numberFormatter(+cdp?.maxWithdrawal)} {cdp?.currencySymbol}</span>
                 </div>
               </div>
             </div>

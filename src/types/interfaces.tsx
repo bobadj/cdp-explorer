@@ -6,10 +6,10 @@ export interface AppContextValue {
   totalVaults: number
   collateralTypes: CollateralType[]
   searchForCdps: Function
-  fetchCdpById: Function
   vaults: CDPBasicInfo[]
   searchProgress: number|null
   totalDebt: number|BigInt
+  fetchCdpDetailedInfoById: Function
 }
 
 export interface Web3WalletContextValue {

@@ -58,4 +58,6 @@ export type CDPDetailedInfo = CDPBasicInfo & {
   ilkRation: string|number
   stabilityFee: string|number
   liquidationFee: string|number
+  maxWithdrawal: string|number
+  maxDebt: string|number
 }
