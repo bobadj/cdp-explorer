@@ -14,7 +14,7 @@ type TableProps = {
   onClick?: (id: number) => void
 }
 
-const Table: FC = ({ className, data, emptyTitle, onClick, loadingAnimation, hideHeader = false, showLoadingAnimation = false }: TableProps): JSX.Element => {
+const Table: FC<TableProps> = ({ className, data, emptyTitle, onClick, loadingAnimation, hideHeader = false, showLoadingAnimation = false }): JSX.Element => {
   const handleClick = (id: number) => {
     if (onClick)
       onClick(id)

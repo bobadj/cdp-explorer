@@ -9,7 +9,7 @@ interface AdvancedSearchProps {
   onChange?: (search: string|undefined, collateralOptions: CollateralType[]) => void
 }
 
-const AdvancedSearch: FC = ({ onChange }: AdvancedSearchProps): JSX.Element => {
+const AdvancedSearch: FC<AdvancedSearchProps> = ({ onChange }): JSX.Element => {
   const [ selectedCollateralTypes, setSelectedCollateralTypes ] = useState<CollateralType[]>([]);
   const [ isSearchFocused, setIsSearchFocused ] = useState<boolean>(false);
   const [ searchedValue, setSearchedValue ] = useState<string>();

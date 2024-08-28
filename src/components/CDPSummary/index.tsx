@@ -4,10 +4,10 @@ import {PRICE_FEED} from "../../const";
 import {CDPDetailedInfo} from "../../types";
 
 interface CDPSummaryProps {
-  cdp: CDPDetailedInfo
+  cdp: CDPDetailedInfo|undefined
 }
 
-const CDPSummary: FC = ({ cdp }: CDPSummaryProps): JSX.Element => {
+const CDPSummary: FC<CDPSummaryProps> = ({ cdp }): JSX.Element => {
   return (
     <div className="flex flex-col gap-5 w-full mt-5 bg-white rounded-md shadow-md px-8 py-5">
       <div className="flex flex-col lg:flex-row">

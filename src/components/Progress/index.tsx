@@ -5,7 +5,7 @@ type ProgressProps = {
   progress: number
 };
 
-const Progress: FC = ({ progress }: ProgressProps): JSX.Element => {
+const Progress: FC<ProgressProps> = ({ progress }): JSX.Element => {
   return (
     <div className="relative">
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full px-28">

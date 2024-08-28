@@ -19,7 +19,7 @@ const CdpDetails: FC = (): JSX.Element => {
     if (cdpId) getCdpById(cdpId);
   }, [cdpId]);
   
-  const getCdpById = async (cdpId) => setCdp(
+  const getCdpById = async (cdpId: string) => setCdp(
     await fetchCdpDetailedInfoById(cdpId)
   );
   

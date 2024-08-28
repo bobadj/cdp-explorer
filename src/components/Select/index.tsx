@@ -12,7 +12,7 @@ type SelectProps = {
   disabled?: boolean
 }
 
-const Select: FC = ({ className, label, labelKey, options, onChange, onFocus, disabled = false }: SelectProps): JSX.Element => {
+const Select: FC<SelectProps> = ({ className, label, labelKey, options, onChange, onFocus, disabled = false }): JSX.Element => {
   const [ visible, setVisible ] = useState<boolean>(false);
   const [ selectedOptions, setSelectedOptions ] = useState<any[]>([]);
   

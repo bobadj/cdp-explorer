@@ -317,6 +317,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     setTimeout(() => {
       setIsLoading(false);
     }, 500);
+
     return {
       ...cdpBasicInfo,
       ilkRation: ilkRatio.toFixed(2),
@@ -324,7 +325,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
       stabilityFee: stabilityFee.toFixed(2),
       maxWithdrawal: maxWithdrawal.toFixed(2),
       maxDebt: maxDebt.toFixed(2),
-    }
+    };
   }
   
   const contextValue: AppContextValue = {

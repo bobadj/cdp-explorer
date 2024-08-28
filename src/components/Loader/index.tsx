@@ -5,7 +5,7 @@ type LoaderProps = PropsWithChildren & {
   isLoading: boolean
 };
 
-const Loader: FC = ({ children, isLoading }: LoaderProps): ReactNode => {
+const Loader: FC<LoaderProps> = ({ children, isLoading }): ReactNode => {
   const [ showLoader, setShowLoader ] = useState<boolean>(false);
   
   useEffect(() => {

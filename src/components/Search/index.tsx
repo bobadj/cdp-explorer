@@ -12,7 +12,7 @@ type SearchProps = {
   disabled?: boolean
 }
 
-const Search: FC = ({ placeholder, className, onChange, onFocus, allow, disabled = false }: SearchProps): JSX.Element => {
+const Search: FC<SearchProps> = ({ placeholder, className, onChange, onFocus, allow, disabled = false }): JSX.Element => {
   const handleChange = useMemo(() => debounce((ev: ChangeEvent) => {
     const target: HTMLTextAreaElement = ev.target as HTMLTextAreaElement;
     if (onChange) onChange(target.value)

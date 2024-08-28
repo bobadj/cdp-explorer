@@ -11,7 +11,7 @@ type ButtonProps = PropsWithChildren & {
   onClick?: MouseEventHandler
 }
 
-const Button: FC = ({ children, classType = ButtonClassTypes.secondary, className, onClick, disabled }: ButtonProps): JSX.Element => {
+const Button: FC<ButtonProps> = ({ children, classType = ButtonClassTypes.secondary, className, onClick, disabled }): JSX.Element => {
   return <button
     className={classNames("flex flex-row items-center font-medium leading-6 rounded-2xl px-5 w-max", className, {
       "bg-primary text-white": classType === ButtonClassTypes.primary,
